@@ -1,4 +1,4 @@
-# Install latest Wordpress
+# Install Wordpress
 
 class wordpress::install {
 
@@ -13,35 +13,23 @@ class wordpress::install {
     command => '/usr/bin/mysql -u root -pvagrant --execute="GRANT ALL PRIVILEGES ON wordpress.* TO \'wordpress\'@\'localhost\' IDENTIFIED BY \'wordpress\'"',
   }
 
-  # Get a new copy of the latest wordpress release
-  # FILE TO DOWNLOAD: http://wordpress.org/latest.tar.gz
-
-  exec { 'download-wordpress': #tee hee
-    command => '/usr/bin/wget http://wordpress.org/latest.tar.gz',
-    cwd     => '/vagrant/',
-    creates => '/vagrant/latest.tar.gz'
+  exec { 'load-database':
+    command  => '/usr/bin/mysql -u wordpress -pwordpress wordpress </vagrant/mysql.sql && touch /home/vagrant/db-loaded',
+    provider => 'shell',
+    timeout  => 1800,  # This might take a really long time.
+    creates  => '/home/vagrant/db-loaded',
+    require  => Exec['create-user'],
   }
 
-  exec { 'untar-wordpress':
-    cwd     => '/vagrant/',
-    command => '/bin/tar xzvf /vagrant/latest.tar.gz',
-    require => Exec['download-wordpress'],
-    creates => '/vagrant/wordpress',
+  exec { 'fixup-database':
+    command => '/bin/sh -eu /vagrant/tools/filter_database.sh && touch /home/vagrant/db-filtered',
+    creates => '/home/vagrant/db-filtered',
+    require => Exec['load-database'],
   }
 
-  # Import a MySQL database for a basic wordpress site.
-  file { '/tmp/wordpress-db.sql':
-    source => 'puppet:///modules/wordpress/wordpress-db.sql'
-  }
-
-  exec { 'load-db':
-    command => '/usr/bin/mysql -u wordpress -pwordpress wordpress < /tmp/wordpress-db.sql && touch /home/vagrant/db-created',
-    creates => '/home/vagrant/db-created',
-  }
-
-  # Copy a working wp-config.php file for the vagrant setup.
-  file { '/vagrant/wordpress/wp-config.php':
-    source => 'puppet:///modules/wordpress/wp-config.php'
+  exec { 'create-wpconfig':
+    command => '/usr/bin/python /vagrant/tools/filter_config.py </vagrant/wp-config.php >/vagrant/wordpress/wp-config.php',
+    creates => '/vagrant/wordpress/wp-config.php',
   }
 
 }
