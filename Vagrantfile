@@ -18,4 +18,11 @@ Vagrant.configure("2") do |config|
     puppet.manifest_file  = "init.pp"
     puppet.options="--verbose --debug"
   end
+
+  # This is a temporary workaround for Vagrant bug #2756
+  #
+  #   https://github.com/mitchellh/vagrant/issues/2756
+  #
+  # Hopefully this can be removed once Vagrant >= 1.4.4 is out.
+  VagrantDNS::Config.auto_run = false
 end
