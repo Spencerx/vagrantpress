@@ -11,8 +11,6 @@ point.
 
 ## Prerequisites
 
-**NB**: The instructions below only work on Mac OS X at present.
-
 Before you can do anything, you'll need a working installation of
 [Vagrant](http://vagrantup.com), which in turn will require either
 [VirtualBox](https://www.virtualbox.org/) or [VMWare
@@ -25,6 +23,8 @@ working:
     $ vagrant -v
     Vagrant 1.4.0
 
+## Mac Installation Instructions
+
 You should also install
 [vagrant-dns](https://github.com/BerlinVagrant/vagrant-dns):
 
@@ -32,6 +32,21 @@ You should also install
     Installing the 'vagrant-dns' plugin. This can take a few minutes...
     Installed the plugin 'vagrant-dns (0.5.0)'!
 
+## Linux Installation Instructions
+
+You need to install `dnsmasq`
+
+    $ sudo apt-get install dnsmasq
+
+Add the following to /etc/dnsmasq.d/wpdev
+
+    address=/.wpdev/172.16.23.16
+
+Replace 172,16,23,16 with the IP address for the virtualbox host.
+
+Patch the Vagrantfile with linux.patch
+
+    patch -p1 < linux.patch
 
 ## Getting started
 
